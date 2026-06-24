@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Exception;
+use App\Events\UserRegistered;
 
 class AuthService
 {
@@ -31,7 +32,8 @@ class AuthService
                 ),
             ]);
 
-            event(new Registered($user));
+            //event(new Registered($user));
+            event(new UserRegistered($user));
 
             Auth::login($user);
 
