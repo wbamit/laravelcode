@@ -1,0 +1,92 @@
+Laravelcode
+First part– 23-06-2026
+
+1) Registration with professional flow
+	( Controller / RegisterRequest / AuthService / UserRepository / Model call )
+
+2) Login with professional flow with Remember me concept
+
+3) Logout 
+
+4) Dashboard with pass success message
+
+5) validation and unique email etc
+
+6) DB Transaction when register with try catch in controller to handle unexpected errors
+
+7) Route and group route with guest and auth(guest mean if not logged in)
+
+8) We can not validate in service because
+	-Service becomes tied to HTTP/web validation. 
+	-Harder to reuse in CLI commands, jobs, APIs. 
+	-Duplicates Laravel's built-in FormRequest features.
+
+9) Make git repository to connect laravel project and push code
+
+2nd part– 23-06-2026 - 24-06-2026
+Event / Listener / Job / Queue / Worker
+
+After register send email--
+1) Laravel by default use Register Event but we will make all custom
+
+SMTP configuration(with Mailtrap account it works with local sandbox mode)---
+
+ENV file —-----
+MAIL_MAILER=smtp
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=31f16c1fe56780
+MAIL_PASSWORD=fb73b0d44ad05b
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@example.com
+MAIL_FROM_NAME="${APP_NAME}"
+
+QUEUE_CONNECTION change to database as you will store it DB table
+
+2) Create files - 
+app\Mail\WelcomeMail.php (Mailable Class)
+resources\views\emails\welcome.blade.php
+app\Events\UserRegistered.php (Event)
+app\Listeners\SendWelcomeEmailListener.php(Listener)
+app\Jobs\SendWelcomeEmailJob.php(Job)
+
+app\Providers\EventServiceProvider.php(call Listener with Event)
+
+For queue make two table with command if no table exist-
+php artisan queue:table
+php artisan migrate
+
+1. jobs
+2. failed_jobs
+
+Run worker and terminal will open like php artisan serve
+php artisan queue:work
+
+Key notes to understand inner calling---
+
+1) if you want to put a listener in queue then
+class SendWelcomeEmailListener implements ShouldQueue (call ShouldQueue interface)
+
+2) call queue for Job dispatch() method automatically call laravel for queue if QUEUE_CONNECTION is sync else immediate work and user will wait.
+
+3) For queue ENV file QUEUE_CONNECTION form sync to database
+
+QUEUE_CONNECTION=sync --- Don't queue anything. Run immediately.
+QUEUE_CONNECTION=database --- Store jobs in database.Execute later.
+
+4) To call listener add it in EventServiceProvider.php with event name
+
+protected $listen = [
+    UserRegistered::class => [
+        SendWelcomeEmailListener::class,
+    ],
+];
+
+5) If queue failed it will store to failed_jobs table
+you can run it by "php artisan queue:retry all" / php artisan queue:retry 12(its a job ID)
+
+In live : you will handle it in a separate way like maintain a failed job class
+
+Event + Listener –work together
+Jobs - optional
+Queue + worker - optional
